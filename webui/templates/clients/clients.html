@@ -1,0 +1,530 @@
+{{ define "page" }}
+  <div class="container mt-2">
+    <div class="card mt-2">
+      <div class="card-body px-0 py-3">
+        <h2 class="px-2">Clients</h2>
+        <div class="table-responsive px-0 py-1">
+          <table class="table table-nobr" id="clients">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Groups</th>
+                <th>Status</th>
+                <th>Enabled</th>
+                <th>Block Height</th>
+                <th>
+                  Stats
+                  <i class="fas fa-info-circle text-muted ms-1" 
+                     data-bs-toggle="popover" 
+                     data-bs-trigger="hover" 
+                     data-bs-placement="top"
+                     data-bs-content="Total Requests / TX Requests / RPC Failures"
+                     style="cursor: help;"></i>
+                </th>
+                <th>Version</th>
+                <th style="width: 120px;">Actions</th>
+              </tr>
+            </thead>
+              <tbody>
+                {{ range $i, $client := .Clients }}
+                  <tr>
+                    <td>{{ $client.Index }}</td>
+                    <td>
+                      <span class="client-name">{{ $client.Name }}</span>
+                      {{ if $client.NameOverride }}
+                        <i class="fas fa-edit text-muted ms-1" title="Custom name set" data-bs-toggle="tooltip"></i>
+                      {{ end }}
+                    </td>
+                    <td>
+                      {{ if eq $client.Type "builder" }}
+                        <span class="badge rounded-pill text-bg-warning">{{ $client.Type }}</span>
+                      {{ else }}
+                        <span class="badge rounded-pill text-bg-info">{{ $client.Type }}</span>
+                      {{ end }}
+                    </td>
+                    <td>
+                      <div class="client-groups">
+                        {{ range $client.Groups }}
+                          <span class="badge rounded-pill text-bg-primary me-1">{{ . }}</span>
+                        {{ end }}
+                      </div>
+                    </td>
+                    <td>
+                      {{ if $client.IsReady }}
+                        <span class="badge rounded-pill text-bg-success">Online</span>
+                      {{ else }}
+                        <span class="badge rounded-pill text-bg-danger">Offline</span>
+                      {{ end }}
+                    </td>
+                    <td>
+                      {{ if $client.Enabled }}
+                        <span class="badge rounded-pill text-bg-success client-enabled">Enabled</span>
+                      {{ else }}
+                        <span class="badge rounded-pill text-bg-secondary client-enabled">Disabled</span>
+                      {{ end }}
+                    </td>
+                    <td>{{ $client.BlockHeight }}</td>
+                    <td>
+                      <span class="font-monospace">{{ $client.TotalRequests }} / {{ $client.TxRequests }} / {{ $client.RpcFailures }}</span>
+                    </td>
+                    <td>
+                      <span class="text-truncate d-inline-block" style="max-width: 400px">{{ $client.Version }}</span>
+                      <i class="fa fa-copy text-muted p-1" role="button" data-bs-toggle="tooltip" title="Copy to clipboard" data-clipboard-text="{{ $client.Version }}"></i>
+                    </td>
+                    <td>
+                      <div class="btn-group" role="group">
+                        <button class="btn btn-sm btn-info edit-name-btn" 
+                                data-index="{{ $client.Index }}" 
+                                data-name="{{ $client.Name | html }}"
+                                data-name-override="{{ $client.NameOverride | html }}"
+                                title="Edit Name" data-bs-toggle="tooltip" data-bs-placement="top">
+                          <i class="fas fa-tag"></i>
+                        </button>
+                        <button class="btn btn-sm btn-secondary edit-type-btn" 
+                                data-index="{{ $client.Index }}" 
+                                data-type="{{ $client.Type }}"
+                                title="Change Client Type" data-bs-toggle="tooltip" data-bs-placement="top">
+                          <i class="fas fa-cogs"></i>
+                        </button>
+                        <button class="btn btn-sm btn-primary edit-groups-btn" 
+                                data-index="{{ $client.Index }}" 
+                                data-groups="{{ range $idx, $group := $client.Groups }}{{ if $idx }},{{ end }}{{ $group }}{{ end }}"
+                                title="Edit Groups" data-bs-toggle="tooltip" data-bs-placement="top">
+                          <i class="fas fa-edit"></i>
+                        </button>
+                        <button class="btn btn-sm {{ if $client.Enabled }}btn-warning{{ else }}btn-success{{ end }} toggle-enabled-btn" 
+                                data-index="{{ $client.Index }}" 
+                                data-enabled="{{ $client.Enabled }}"
+                                title="{{ if $client.Enabled }}Disable Client{{ else }}Enable Client{{ end }}" data-bs-toggle="tooltip" data-bs-placement="top">
+                          <i class="fas {{ if $client.Enabled }}fa-power-off{{ else }}fa-play{{ end }}"></i>
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                {{ end }}
+              </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Client Name Modal -->
+  <div class="modal fade" id="editClientNameModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Client Name</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editClientNameForm">
+            <input type="hidden" name="index">
+            <div class="mb-3">
+              <label class="form-label">Custom Display Name</label>
+              <input type="text" class="form-control" id="clientNameInput" placeholder="Enter custom name (leave empty to use default)">
+              <div class="form-text">
+                Leave empty to use auto-generated name from RPC host URL
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Current Auto-Generated Name</label>
+              <input type="text" class="form-control" id="autoGeneratedName" readonly>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="submitClientNameEdit()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Client Groups Modal -->
+  <div class="modal fade" id="editClientGroupsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Edit Client Groups</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editClientGroupsForm">
+            <input type="hidden" name="index">
+            <div class="mb-3">
+              <label class="form-label">Client Groups</label>
+              <div class="input-group mb-2">
+                <input type="text" class="form-control" id="newGroupInput" placeholder="Enter group name">
+                <button type="button" class="btn btn-outline-secondary" onclick="addGroup()">
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
+              <div class="form-text">
+                Common groups: default, primary, secondary, backup, mainnet, testnet
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label">Current Groups</label>
+              <div id="currentGroups" class="border rounded p-2 min-height-50">
+                <!-- Groups will be populated here -->
+              </div>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="submitClientGroupsEdit()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Client Type Modal -->
+  <div class="modal fade" id="editClientTypeModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title">Select Client Type</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <form id="editClientTypeForm">
+            <input type="hidden" name="index">
+            <div class="mb-3">
+              <label class="form-label">Choose the type of client:</label>
+              <div class="list-group">
+                <label class="list-group-item d-flex gap-2">
+                  <input class="form-check-input me-1" type="radio" name="clientType" value="client" id="clientTypeClient">
+                  <div class="d-flex gap-2 w-100 justify-content-between">
+                    <div>
+                      <h6 class="mb-0">Regular Client</h6>
+                      <p class="mb-0 opacity-75">Standard Ethereum execution client (Geth, Nethermind, Besu, etc.)</p>
+                    </div>
+                    <span class="badge rounded-pill text-bg-info align-self-start">client</span>
+                  </div>
+                </label>
+                <label class="list-group-item d-flex gap-2">
+                  <input class="form-check-input me-1" type="radio" name="clientType" value="builder" id="clientTypeBuilder">
+                  <div class="d-flex gap-2 w-100 justify-content-between">
+                    <div>
+                      <h6 class="mb-0">Builder Client</h6>
+                      <p class="mb-0 opacity-75">MEV-Boost builder or block building service. Limited RPC methods available.</p>
+                    </div>
+                    <span class="badge rounded-pill text-bg-warning align-self-start">builder</span>
+                  </div>
+                </label>
+              </div>
+            </div>
+            <div class="alert alert-info" role="alert">
+              <i class="fas fa-info-circle me-2"></i>
+              <strong>Note:</strong> Builder clients don't support certain RPC methods like <code>eth_blockNumber</code>, <code>eth_getBlockByNumber</code>, and <code>eth_getBlockReceipts</code>. They are automatically excluded from operations requiring these methods.
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="button" class="btn btn-primary" onclick="submitClientTypeEdit()">Save Changes</button>
+        </div>
+      </div>
+    </div>
+  </div>
+{{ end }}
+
+{{ define "js" }}
+<script>
+let currentClientIndex = null;
+let currentGroups = [];
+let currentClientName = null;
+let currentNameOverride = null;
+let currentClientType = null;
+
+function editClientGroups(index, groupsStr) {
+  currentClientIndex = index;
+  currentGroups = groupsStr ? groupsStr.split(',').map(g => g.trim()).filter(g => g) : [];
+  
+  const form = document.getElementById('editClientGroupsForm');
+  form.querySelector('[name="index"]').value = index;
+  
+  updateGroupsDisplay();
+  new bootstrap.Modal(document.getElementById('editClientGroupsModal')).show();
+}
+
+function updateGroupsDisplay() {
+  const container = document.getElementById('currentGroups');
+  container.innerHTML = '';
+  
+  if (currentGroups.length === 0) {
+    container.innerHTML = '<span class="text-muted">No groups assigned</span>';
+    return;
+  }
+  
+  currentGroups.forEach((group, index) => {
+    const badge = document.createElement('span');
+    badge.className = 'badge bg-primary me-1 mb-1 d-inline-flex align-items-center';
+    badge.innerHTML = `
+      ${group}
+      <button type="button" class="btn-close btn-close-white ms-1" style="font-size: 0.6em;" onclick="removeGroup(${index})"></button>
+    `;
+    container.appendChild(badge);
+  });
+}
+
+function addGroup() {
+  const input = document.getElementById('newGroupInput');
+  const groupName = input.value.trim();
+  
+  if (!groupName) {
+    return;
+  }
+  
+  if (currentGroups.includes(groupName)) {
+    alert('Group already exists');
+    return;
+  }
+  
+  currentGroups.push(groupName);
+  input.value = '';
+  updateGroupsDisplay();
+}
+
+function removeGroup(index) {
+  currentGroups.splice(index, 1);
+  updateGroupsDisplay();
+}
+
+function editClientName(index, displayName, nameOverride) {
+  currentClientIndex = index;
+  currentClientName = displayName;
+  currentNameOverride = nameOverride;
+  
+  var form = document.getElementById('editClientNameForm');
+  form.querySelector('[name="index"]').value = index;
+  
+  var nameInput = document.getElementById('clientNameInput');
+  var autoNameInput = document.getElementById('autoGeneratedName');
+  
+  nameInput.value = nameOverride || '';
+  autoNameInput.value = displayName;
+  
+  new bootstrap.Modal(document.getElementById('editClientNameModal')).show();
+}
+
+function submitClientNameEdit() {
+  var nameOverride = document.getElementById('clientNameInput').value.trim();
+  var xhr = new XMLHttpRequest();
+  xhr.open('PUT', '/api/client/' + currentClientIndex + '/name', true);
+  xhr.setRequestHeader('Content-Type', 'application/json');
+  xhr.onreadystatechange = function() {
+    if (xhr.readyState === 4) {
+      if (xhr.status === 200) {
+        location.reload();
+      } else {
+        alert('Failed to update client name');
+      }
+    }
+  };
+  xhr.send(JSON.stringify({name_override: nameOverride}));
+}
+
+async function submitClientGroupsEdit() {
+  if (currentGroups.length === 0) {
+    alert('At least one group must be assigned');
+    return;
+  }
+  
+  try {
+    const url = '/api/client/' + currentClientIndex + '/group';
+    await fetch(url, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({groups: currentGroups})
+    });
+    
+    const tableRows = document.querySelectorAll('#clients tbody tr');
+    const targetRow = tableRows[parseInt(currentClientIndex)];
+    const groupsCell = targetRow.querySelector('.client-groups');
+    
+    groupsCell.innerHTML = '';
+    currentGroups.forEach(group => {
+      const badge = document.createElement('span');
+      badge.className = 'badge rounded-pill text-bg-primary me-1';
+      badge.textContent = group;
+      groupsCell.appendChild(badge);
+    });
+    
+    const editBtn = targetRow.querySelector('.edit-groups-btn');
+    editBtn.setAttribute('data-groups', currentGroups.join(','));
+    
+    bootstrap.Modal.getInstance(document.getElementById('editClientGroupsModal')).hide();
+    
+    alert('Client groups updated successfully');
+  } catch (err) {
+    alert('Failed to update client groups: ' + err.message);
+  }
+}
+
+async function toggleClientEnabled(index, currentEnabled) {
+  const newEnabled = !currentEnabled;
+  
+  try {
+    const url = '/api/client/' + index + '/enabled';
+    await fetch(url, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({enabled: newEnabled})
+    });
+    
+    const tableRows = document.querySelectorAll('#clients tbody tr');
+    const targetRow = tableRows[parseInt(index)];
+    const enabledCell = targetRow.querySelector('.client-enabled');
+    const toggleButton = targetRow.querySelector('.toggle-enabled-btn');
+    const toggleIcon = toggleButton.querySelector('i');
+    
+    if (newEnabled) {
+      enabledCell.textContent = 'Enabled';
+      enabledCell.className = 'badge rounded-pill text-bg-success client-enabled';
+      toggleButton.className = 'btn btn-sm btn-warning toggle-enabled-btn';
+      toggleButton.title = 'Disable Client';
+      toggleIcon.className = 'fas fa-power-off';
+    } else {
+      enabledCell.textContent = 'Disabled';
+      enabledCell.className = 'badge rounded-pill text-bg-secondary client-enabled';
+      toggleButton.className = 'btn btn-sm btn-success toggle-enabled-btn';
+      toggleButton.title = 'Enable Client';
+      toggleIcon.className = 'fas fa-play';
+    }
+    
+    toggleButton.dataset.enabled = newEnabled;
+    
+    const tooltip = bootstrap.Tooltip.getInstance(toggleButton);
+    if (tooltip) {
+      tooltip.dispose();
+      new bootstrap.Tooltip(toggleButton);
+    }
+    
+    alert('Client ' + (newEnabled ? 'enabled' : 'disabled') + ' successfully');
+  } catch (err) {
+    alert('Failed to update client enabled state: ' + err.message);
+  }
+}
+
+function editClientType(index, currentType) {
+  currentClientIndex = index;
+  currentClientType = currentType;
+  
+  const form = document.getElementById('editClientTypeForm');
+  form.querySelector('[name="index"]').value = index;
+  
+  const radioButton = form.querySelector(`input[value="${currentType}"]`);
+  if (radioButton) {
+    radioButton.checked = true;
+  }
+  
+  new bootstrap.Modal(document.getElementById('editClientTypeModal')).show();
+}
+
+async function submitClientTypeEdit() {
+  const form = document.getElementById('editClientTypeForm');
+  const selectedType = form.querySelector('input[name="clientType"]:checked');
+  
+  if (!selectedType) {
+    alert('Please select a client type');
+    return;
+  }
+  
+  const newType = selectedType.value;
+  
+  try {
+    const url = '/api/client/' + currentClientIndex + '/type';
+    await fetch(url, {
+      method: 'PUT',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({client_type: newType})
+    });
+    
+    const tableRows = document.querySelectorAll('#clients tbody tr');
+    const targetRow = tableRows[parseInt(currentClientIndex)];
+    const typeCell = targetRow.querySelector('td:nth-child(3) span');
+    const typeButton = targetRow.querySelector('.edit-type-btn');
+    
+    if (newType === 'builder') {
+      typeCell.textContent = 'builder';
+      typeCell.className = 'badge rounded-pill text-bg-warning';
+    } else {
+      typeCell.textContent = 'client';
+      typeCell.className = 'badge rounded-pill text-bg-info';
+    }
+    
+    typeButton.dataset.type = newType;
+    
+    bootstrap.Modal.getInstance(document.getElementById('editClientTypeModal')).hide();
+    
+    alert('Client type changed to ' + newType + ' successfully');
+  } catch (err) {
+    alert('Failed to update client type: ' + err.message);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'));
+  tooltipTriggerList.map(tooltipTriggerEl => new bootstrap.Tooltip(tooltipTriggerEl));
+  
+  const popoverTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="popover"]'));
+  popoverTriggerList.map(popoverTriggerEl => new bootstrap.Popover(popoverTriggerEl));
+  
+  document.querySelectorAll('.edit-name-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      var index = button.dataset.index;
+      var name = button.dataset.name;
+      var nameOverride = button.dataset.nameOverride;
+      editClientName(index, name, nameOverride);
+    });
+  });
+  
+  document.querySelectorAll('.edit-groups-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const index = button.dataset.index;
+      const groups = button.dataset.groups;
+      editClientGroups(index, groups);
+    });
+  });
+  
+  document.querySelectorAll('.edit-type-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const index = button.dataset.index;
+      const type = button.dataset.type;
+      editClientType(index, type);
+    });
+  });
+  
+  document.querySelectorAll('.toggle-enabled-btn').forEach(button => {
+    button.addEventListener('click', () => {
+      const index = button.dataset.index;
+      const enabled = button.dataset.enabled === 'true';
+      toggleClientEnabled(index, enabled);
+    });
+  });
+  
+  document.getElementById('newGroupInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      addGroup();
+    }
+  });
+});
+</script>
+{{ end }}
+{{ define "css" }}
+<style>
+.min-height-50 {
+  min-height: 50px;
+}
+
+.client-groups .badge {
+  font-size: 0.75em;
+}
+</style>
+{{ end }}

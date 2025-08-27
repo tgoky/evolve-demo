@@ -1,0 +1,1257 @@
+definitions:
+  api.AuditLogEntry:
+    properties:
+      action_type:
+        type: string
+      diff:
+        type: string
+      entity_id:
+        type: string
+      entity_name:
+        type: string
+      entity_type:
+        type: string
+      id:
+        type: integer
+      metadata:
+        type: string
+      timestamp:
+        type: integer
+      user_email:
+        type: string
+    type: object
+  api.AuditLogResponse:
+    properties:
+      logs:
+        items:
+          $ref: '#/definitions/api.AuditLogEntry'
+        type: array
+      page:
+        type: integer
+      page_size:
+        type: integer
+      total_count:
+        type: integer
+      total_pages:
+        type: integer
+    type: object
+  api.AuditLogStatsResponse:
+    properties:
+      logs_by_action_type:
+        additionalProperties:
+          type: integer
+        type: object
+      logs_by_entity_type:
+        additionalProperties:
+          type: integer
+        type: object
+      logs_by_user:
+        additionalProperties:
+          type: integer
+        type: object
+      recent_activity:
+        items:
+          $ref: '#/definitions/api.AuditLogEntry'
+        type: array
+      time_range:
+        additionalProperties:
+          type: string
+        type: object
+      total_logs:
+        type: integer
+    type: object
+  api.ClientEntry:
+    properties:
+      block_height:
+        type: integer
+      enabled:
+        type: boolean
+      group:
+        description: First group for backward compatibility
+        type: string
+      groups:
+        description: All groups
+        items:
+          type: string
+        type: array
+      index:
+        type: integer
+      name:
+        type: string
+      name_override:
+        type: string
+      ready:
+        type: boolean
+      rpc_host:
+        type: string
+      type:
+        description: Client type (client, builder)
+        type: string
+      version:
+        type: string
+    type: object
+  api.CreateSpammerRequest:
+    properties:
+      config:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+      scenario:
+        type: string
+      startImmediately:
+        type: boolean
+    type: object
+  api.ExportSpammersRequest:
+    properties:
+      spammer_ids:
+        description: If empty, exports all spammers
+        items:
+          type: integer
+        type: array
+    type: object
+  api.GraphsDashboardResponse:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/api.GraphsDataPoint'
+        type: array
+      others:
+        $ref: '#/definitions/api.OthersMetricsData'
+      range:
+        $ref: '#/definitions/api.TimeRange'
+      spammers:
+        items:
+          $ref: '#/definitions/api.SpammerMetricsData'
+        type: array
+      totals:
+        $ref: '#/definitions/api.TotalMetricsData'
+    type: object
+  api.GraphsDataPoint:
+    properties:
+      blocks:
+        type: integer
+      endBlock:
+        type: integer
+      othersGas:
+        type: integer
+      spammers:
+        additionalProperties:
+          $ref: '#/definitions/api.SpammerBlockData'
+        description: spammerID -> detailed data
+        type: object
+      startBlock:
+        type: integer
+      totalGas:
+        type: integer
+      ts:
+        type: string
+    type: object
+  api.ImportSpammersRequest:
+    properties:
+      input:
+        description: Can be YAML data or a URL
+        type: string
+    type: object
+  api.LogEntry:
+    properties:
+      fields:
+        additionalProperties:
+          type: string
+        type: object
+      level:
+        type: string
+      message:
+        type: string
+      time:
+        type: string
+    type: object
+  api.OthersMetricsData:
+    properties:
+      gasUsed:
+        type: integer
+    type: object
+  api.PendingTransactionEntry:
+    properties:
+      base_fee:
+        description: In wei as string
+        type: string
+      base_fee_formatted:
+        description: Formatted for display
+        type: string
+      fee:
+        description: In wei as string
+        type: string
+      fee_formatted:
+        description: Formatted for display
+        type: string
+      hash:
+        type: string
+      last_rebroadcast:
+        description: RFC3339 timestamp
+        type: string
+      nonce:
+        type: integer
+      rebroadcast_count:
+        type: integer
+      scenario_name:
+        description: Scenario name (if applicable)
+        type: string
+      spammer_id:
+        description: Spammer ID (if applicable)
+        type: integer
+      submitted_at:
+        description: RFC3339 timestamp
+        type: string
+      value:
+        description: In wei as string
+        type: string
+      value_formatted:
+        description: Formatted for display
+        type: string
+      wallet_address:
+        type: string
+      wallet_name:
+        description: Human-readable wallet name
+        type: string
+    type: object
+  api.ScenarioEntries:
+    properties:
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  api.SpammerBlockData:
+    properties:
+      confirmed:
+        type: integer
+      gas:
+        type: integer
+      pending:
+        type: integer
+      submitted:
+        type: integer
+    type: object
+  api.SpammerDetails:
+    properties:
+      config:
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      scenario:
+        type: string
+      status:
+        type: integer
+    type: object
+  api.SpammerLibraryEntry:
+    properties:
+      description:
+        type: string
+      file:
+        type: string
+      min_version:
+        type: string
+      name:
+        type: string
+      scenarios:
+        items:
+          type: string
+        type: array
+      spammer_count:
+        type: integer
+      tags:
+        items:
+          type: string
+        type: array
+    type: object
+  api.SpammerLibraryIndex:
+    properties:
+      base_url:
+        type: string
+      cached_at:
+        type: string
+      configs:
+        items:
+          $ref: '#/definitions/api.SpammerLibraryEntry'
+        type: array
+      generated:
+        type: string
+    type: object
+  api.SpammerListEntry:
+    properties:
+      created_at:
+        description: RFC3339Nano formatted timestamp
+        type: string
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      scenario:
+        type: string
+      status:
+        type: integer
+    type: object
+  api.SpammerMetricsData:
+    properties:
+      confirmed:
+        type: integer
+      gasUsed:
+        type: integer
+      id:
+        type: integer
+      name:
+        type: string
+      pending:
+        type: integer
+      status:
+        description: Running status from daemon
+        type: integer
+      submitted:
+        type: integer
+      updated:
+        type: string
+    type: object
+  api.SpammerTimeSeriesPoint:
+    properties:
+      blockNumber:
+        type: integer
+      confirmedTxCount:
+        type: integer
+      gasUsed:
+        type: integer
+      pendingTxCount:
+        type: integer
+      timestamp:
+        type: string
+    type: object
+  api.SpammerTimeSeriesResponse:
+    properties:
+      dataPoints:
+        items:
+          $ref: '#/definitions/api.SpammerTimeSeriesPoint'
+        type: array
+      spammerId:
+        type: integer
+      spammerName:
+        type: string
+      timeRange:
+        $ref: '#/definitions/api.TimeRange'
+    type: object
+  api.TimeRange:
+    properties:
+      end:
+        type: string
+      start:
+        type: string
+    type: object
+  api.TotalMetricsData:
+    properties:
+      confirmed:
+        type: integer
+      gasUsed:
+        type: integer
+      pending:
+        type: integer
+      submitted:
+        type: integer
+    type: object
+  api.UpdateClientEnabledRequest:
+    properties:
+      enabled:
+        type: boolean
+    type: object
+  api.UpdateClientGroupRequest:
+    properties:
+      group:
+        description: Single group for backward compatibility
+        type: string
+      groups:
+        description: Multiple groups
+        items:
+          type: string
+        type: array
+    type: object
+  api.UpdateClientNameRequest:
+    properties:
+      name_override:
+        type: string
+    type: object
+  api.UpdateClientTypeRequest:
+    properties:
+      client_type:
+        type: string
+    type: object
+  api.UpdateSpammerRequest:
+    properties:
+      config:
+        type: string
+      description:
+        type: string
+      name:
+        type: string
+    type: object
+  api.VersionResponse:
+    properties:
+      release:
+        type: string
+      version:
+        type: string
+    type: object
+  daemon.ImportResult:
+    properties:
+      errors:
+        items:
+          type: string
+        type: array
+      imported:
+        items:
+          $ref: '#/definitions/daemon.ImportedSpammerInfo'
+        type: array
+      imported_count:
+        type: integer
+      message:
+        type: string
+      validation:
+        $ref: '#/definitions/daemon.ImportValidationResult'
+      warnings:
+        items:
+          type: string
+        type: array
+    type: object
+  daemon.ImportValidationResult:
+    properties:
+      duplicates:
+        items:
+          type: string
+        type: array
+      invalid_scenarios:
+        items:
+          type: string
+        type: array
+      spammers:
+        items:
+          $ref: '#/definitions/daemon.SpammerValidationInfo'
+        type: array
+      total_spammers:
+        type: integer
+      valid_spammers:
+        type: integer
+    type: object
+  daemon.ImportedSpammerInfo:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      scenario:
+        type: string
+    type: object
+  daemon.SpammerValidationInfo:
+    properties:
+      description:
+        type: string
+      issues:
+        items:
+          type: string
+        type: array
+      name:
+        type: string
+      scenario:
+        type: string
+      valid:
+        type: boolean
+    type: object
+info:
+  contact: {}
+paths:
+  /api/audit-logs:
+    get:
+      description: Returns paginated audit logs with optional filtering
+      operationId: getAuditLogs
+      parameters:
+      - description: Filter by user email
+        in: query
+        name: user_email
+        type: string
+      - description: Filter by action type
+        in: query
+        name: action_type
+        type: string
+      - description: Filter by entity type (spammer, client, system)
+        in: query
+        name: entity_type
+        type: string
+      - description: Filter by entity ID
+        in: query
+        name: entity_id
+        type: string
+      - description: Start time (unix timestamp)
+        in: query
+        name: start_time
+        type: integer
+      - description: End time (unix timestamp)
+        in: query
+        name: end_time
+        type: integer
+      - description: 'Page number (default: 1)'
+        in: query
+        name: page
+        type: integer
+      - description: 'Page size (default: 50, max: 1000)'
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.AuditLogResponse'
+        "400":
+          description: Invalid parameters
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get audit logs
+      tags:
+      - Audit
+  /api/audit-logs/{id}:
+    get:
+      description: Returns a specific audit log entry by ID
+      operationId: getAuditLog
+      parameters:
+      - description: Audit log ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.AuditLogEntry'
+        "400":
+          description: Invalid audit log ID
+          schema:
+            type: string
+        "404":
+          description: Audit log not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get a specific audit log entry
+      tags:
+      - Audit
+  /api/audit-logs/stats:
+    get:
+      description: Returns statistics about audit logs including counts by type and
+        recent activity
+      operationId: getAuditLogStats
+      parameters:
+      - description: 'Number of days to include in stats (default: 30)'
+        in: query
+        name: days
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.AuditLogStatsResponse'
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get audit log statistics
+      tags:
+      - Audit
+  /api/client/{index}/enabled:
+    put:
+      consumes:
+      - application/json
+      description: Updates the enabled state for a specific client
+      operationId: updateClientEnabled
+      parameters:
+      - description: Client index
+        in: path
+        name: index
+        required: true
+        type: integer
+      - description: New enabled state
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateClientEnabledRequest'
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid client index
+          schema:
+            type: string
+        "404":
+          description: Client not found
+          schema:
+            type: string
+      summary: Update client enabled state
+      tags:
+      - Client
+  /api/client/{index}/group:
+    put:
+      consumes:
+      - application/json
+      description: Updates the group(s) for a specific client. Supports both single
+        group (backward compatibility) and multiple groups.
+      operationId: updateClientGroup
+      parameters:
+      - description: Client index
+        in: path
+        name: index
+        required: true
+        type: integer
+      - description: New group name(s)
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateClientGroupRequest'
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid client index
+          schema:
+            type: string
+        "404":
+          description: Client not found
+          schema:
+            type: string
+      summary: Update client group
+      tags:
+      - Client
+  /api/client/{index}/name:
+    put:
+      consumes:
+      - application/json
+      description: Updates the name override for a specific client
+      operationId: updateClientName
+      parameters:
+      - description: Client index
+        in: path
+        name: index
+        required: true
+        type: integer
+      - description: New name override
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateClientNameRequest'
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid client index
+          schema:
+            type: string
+        "404":
+          description: Client not found
+          schema:
+            type: string
+      summary: Update client name override
+      tags:
+      - Client
+  /api/client/{index}/type:
+    put:
+      consumes:
+      - application/json
+      description: Updates the type for a specific client (e.g., 'client' or 'builder')
+      operationId: updateClientType
+      parameters:
+      - description: Client index
+        in: path
+        name: index
+        required: true
+        type: integer
+      - description: New client type
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateClientTypeRequest'
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid client index or type
+          schema:
+            type: string
+        "404":
+          description: Client not found
+          schema:
+            type: string
+      summary: Update client type
+      tags:
+      - Client
+  /api/clients:
+    get:
+      description: Returns a list of all clients with their details
+      operationId: getClients
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/api.ClientEntry'
+            type: array
+      summary: Get all clients
+      tags:
+      - Client
+  /api/graphs/dashboard:
+    get:
+      description: Returns comprehensive graphs data for the dashboard including all
+        spammers, totals, and time-series data
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.GraphsDashboardResponse'
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get graphs dashboard data
+      tags:
+      - Graphs
+  /api/graphs/spammer/{id}/timeseries:
+    get:
+      description: Returns detailed time-series graphs data for a specific spammer
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.SpammerTimeSeriesResponse'
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get time-series data for a specific spammer
+      tags:
+      - Graphs
+  /api/graphs/stream:
+    get:
+      description: Provides real-time graphs updates via Server-Sent Events (SSE)
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream
+          schema:
+            type: string
+      summary: Stream real-time graphs updates
+      tags:
+      - Graphs
+  /api/pending-transactions:
+    get:
+      description: Returns a list of pending transactions, optionally filtered by
+        wallet address
+      operationId: getPendingTransactions
+      parameters:
+      - description: Wallet address to filter by (optional)
+        in: query
+        name: wallet
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/api.PendingTransactionEntry'
+            type: array
+        "400":
+          description: Invalid wallet address
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get pending transactions (global or wallet-specific)
+      tags:
+      - Wallet
+  /api/scenarios:
+    get:
+      description: Returns a list of all scenarios
+      operationId: getScenarios
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/api.ScenarioEntries'
+            type: array
+        "400":
+          description: Failure
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get all scenarios
+      tags:
+      - Scenario
+  /api/scenarios/{name}/config:
+    get:
+      description: Returns the default configuration for a specific scenario
+      operationId: getScenarioConfig
+      parameters:
+      - description: Scenario name
+        in: path
+        name: name
+        required: true
+        type: string
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: YAML configuration
+          schema:
+            type: string
+        "404":
+          description: Scenario not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get scenario configuration
+      tags:
+      - Scenario
+  /api/spammer:
+    post:
+      consumes:
+      - application/json
+      description: Creates a new spammer with the given configuration
+      operationId: createSpammer
+      parameters:
+      - description: Spammer configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.CreateSpammerRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Spammer ID
+          schema:
+            type: integer
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Create a new spammer
+      tags:
+      - Spammer
+  /api/spammer-library/index:
+    get:
+      description: Returns the index of available spammer configurations from GitHub
+      operationId: getSpammerLibraryIndex
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.SpammerLibraryIndex'
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Get spammer library index
+      tags:
+      - SpammerLibrary
+  /api/spammer/{id}:
+    delete:
+      description: Deletes a spammer and stops it if running
+      operationId: deleteSpammer
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Delete a spammer
+      tags:
+      - Spammer
+    get:
+      description: Returns detailed information about a specific spammer
+      operationId: getSpammerDetails
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.SpammerDetails'
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+      summary: Get spammer details
+      tags:
+      - Spammer
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing spammer's configuration
+      operationId: updateSpammer
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.UpdateSpammerRequest'
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Update a spammer
+      tags:
+      - Spammer
+  /api/spammer/{id}/logs:
+    get:
+      description: Returns the most recent logs for a specific spammer
+      operationId: getSpammerLogs
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/api.LogEntry'
+            type: array
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+      summary: Get spammer logs
+      tags:
+      - Spammer
+  /api/spammer/{id}/logs/stream:
+    get:
+      description: Streams logs for a specific spammer using Server-Sent Events
+      operationId: streamSpammerLogs
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Timestamp to start from (RFC3339Nano)
+        in: query
+        name: since
+        type: string
+      produces:
+      - text/event-stream
+      responses:
+        "200":
+          description: SSE stream of log entries
+          schema:
+            type: string
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Streaming unsupported
+          schema:
+            type: string
+      summary: Stream spammer logs
+      tags:
+      - Spammer
+  /api/spammer/{id}/pause:
+    post:
+      description: Pauses a running spammer
+      operationId: pauseSpammer
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Pause a spammer
+      tags:
+      - Spammer
+  /api/spammer/{id}/reclaim:
+    post:
+      description: Reclaims funds from a spammer's wallet pool back to the root wallet
+      operationId: reclaimFunds
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Reclaim funds from a spammer
+      tags:
+      - Spammer
+  /api/spammer/{id}/start:
+    post:
+      description: Starts a specific spammer
+      operationId: startSpammer
+      parameters:
+      - description: Spammer ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: Success
+        "400":
+          description: Invalid spammer ID
+          schema:
+            type: string
+        "404":
+          description: Spammer not found
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Start a spammer
+      tags:
+      - Spammer
+  /api/spammers:
+    get:
+      description: Returns a list of all configured spammers
+      operationId: getSpammerList
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            items:
+              $ref: '#/definitions/api.SpammerListEntry'
+            type: array
+      summary: Get all spammers
+      tags:
+      - Spammer
+  /api/spammers/export:
+    post:
+      consumes:
+      - application/json
+      description: Exports specified spammers or all spammers to YAML format
+      operationId: exportSpammers
+      parameters:
+      - description: Spammer IDs to export (optional)
+        in: body
+        name: request
+        schema:
+          $ref: '#/definitions/api.ExportSpammersRequest'
+      produces:
+      - text/plain
+      responses:
+        "200":
+          description: YAML configuration
+          schema:
+            type: string
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Export spammers to YAML
+      tags:
+      - Spammer
+  /api/spammers/import:
+    post:
+      consumes:
+      - application/json
+      description: Imports spammers from YAML data or URL with validation and deduplication
+      operationId: importSpammers
+      parameters:
+      - description: Import configuration
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/api.ImportSpammersRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/daemon.ImportResult'
+        "400":
+          description: Invalid request
+          schema:
+            type: string
+        "500":
+          description: Server Error
+          schema:
+            type: string
+      summary: Import spammers from YAML data or URL
+      tags:
+      - Spammer
+  /api/version:
+    get:
+      description: Returns the current spamoor version information
+      operationId: getVersion
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: '#/definitions/api.VersionResponse'
+      summary: Get spamoor version
+      tags:
+      - Version
+swagger: "2.0"
